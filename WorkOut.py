@@ -328,8 +328,6 @@ def _GenSN() -> str:
 
 
 def _Beep(engine, per, qnt, bg):
-    # frq = [262, 294, 330, 392, 440]
-    #frq = [523, 587, 659, 784, 880]
     frq = [int(i) for i in np.linspace(523, 1046, qnt)]
     st = 10 if qnt > 30 else 5
 
