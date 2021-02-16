@@ -350,5 +350,6 @@ def _text2Speech(engine, text):
     engine.say(text)
     engine.runAndWait()
 
+
 if __name__ == '__main__':
     SelCourse()
