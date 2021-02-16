@@ -199,6 +199,7 @@ class SelCourse(object):
         return dfCourse
 
     def ShowCourse(self, dfCourse):
+        # todo: 启动时，自动显示所有课程
         self.coursePool = StandardTreeview(master=self.frameShow)
         button = StandardButton(self.frameShow, '确认', 1, 0)
         button.bind('<ButtonRelease-1>', self.CourseSelected)
@@ -302,7 +303,7 @@ def _PlayCourse(engine, course: list, dfCourse: pd.DataFrame):
     dfRecord = pd.DataFrame(listRecord, columns=['bg', 'code', 'qnt', 'ed'])
     dfRecord.to_csv(Para().txtMotionHistory, mode='a', sep=' ', index=False, header=False)
 
-    if abs(nw - sec) > 5:
+    if abs(nw - sec) > 10:
         notice = '注意！请更新档案！{}，耗时共计{}秒。'.format(course[0].split('-')[-1], nw)
         _text2Speech(engine, notice)
 
@@ -328,19 +329,21 @@ def _GenSN() -> str:
 
 
 def _Beep(engine, per, qnt, bg):
+    lenBeep = 250
     frq = [int(i) for i in np.linspace(523, 1046, qnt)]
     st = 10 if (qnt > 30 or qnt < 10) else 5
 
     _text2Speech(engine, '开始')
     for i in range(qnt, 0, -1):
-        nw = int(time.time() - bg)
+        a = time.time()
+        nw = int(a - bg)
         print(str(qnt-i+1).zfill(3), str(nw).zfill(4))
         if i > st:
-            dur = 260
-            winsound.Beep(frq[qnt-i], dur)
+            winsound.Beep(frq[qnt-i], lenBeep)
         else:
             _text2Speech(engine, str(i))
-            dur = 1100
+        b = time.time()
+        dur = int((b - a) * 1e3)
 
         if per > dur * 1e-3:
             time.sleep(per - dur * 1e-3)
