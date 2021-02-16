@@ -329,7 +329,7 @@ def _GenSN() -> str:
 
 def _Beep(engine, per, qnt, bg):
     frq = [int(i) for i in np.linspace(523, 1046, qnt)]
-    st = 10 if qnt > 30 else 5
+    st = 10 if (qnt > 30 or qnt < 10) else 5
 
     _text2Speech(engine, '开始')
     for i in range(qnt, 0, -1):
