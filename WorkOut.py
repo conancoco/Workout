@@ -117,11 +117,11 @@ def StandardTreeview(master):
     width = [360, 180, 180, 240, 360, 120, 120, 60]
     head = ['代码', '名称', '分类', '部位', '器材', '等级', '长度']
 
-    widget = ttk.Treeview(master=master, columns=col, show='headings')
+    widget = ttk.Treeview(master=master, columns=col, show='headings', height=18)
     widget.grid(row=0, column=0, sticky='EW', columnspan=1)
 
     style = ttk.Style()
-    style.configure("Treeview.Heading", font=('华文行楷', 18))
+    style.configure("Treeview.Heading", font=('华文行楷', 20))
     style.configure("Treeview", font=('Courier', 14))
 
     vsb = ttk.Scrollbar(master=master, orient="vertical", command=widget.yview)
@@ -143,6 +143,8 @@ class SelCourse(object):
         self.varCat = [tk.BooleanVar() for i in range(len(self.para.tupleCatego))]
         self.varTar = [tk.BooleanVar() for i in range(len(self.para.tupleTarget))]
         self.varEqp = [tk.BooleanVar() for i in range(len(self.para.tupleEquip))]
+        self.dfCourse = self.para.dfCourse[['cod', 'nam', 'cat', 'tgt', 'eqp', 'lvl', 'len']]
+
 
         frameCheck = StandardFrame(self.root, 0, 0, 500)
         self.Frame(frameCheck)
@@ -150,6 +152,10 @@ class SelCourse(object):
 
         self.b1 = StandardButton(self.root, '确认', 1, 0)
         self.b1.bind('<Button-1>', self.FilterSelected)
+        self.coursePool = StandardTreeview(master=self.frameShow)
+        button = StandardButton(self.root, '确认', 1, 1)
+        button.bind('<ButtonRelease-1>', self.CourseSelected)
+        self.ShowCourse(self.dfCourse)
 
         self.engine = pyttsx3.init()
         self.engine.setProperty('voice', self.engine.getProperty('voices')[2].id)
@@ -167,7 +173,7 @@ class SelCourse(object):
             c = StandardCheck(master, tar[1:], i + 1, 1, variable=self.varTar[i])
             c.deselect()
 
-        StandardLabel(master, 0, 2, '类型')
+        StandardLabel(master, 0, 2, '道具')
         for i, eqp in enumerate(self.para.tupleEquip):
             c = StandardCheck(master, eqp[1:], i + 1, 2, variable=self.varEqp[i])
             c.deselect()
@@ -185,24 +191,21 @@ class SelCourse(object):
         return cat, tar, eqp
 
     def FilterCourse(self, cat, tar, eqp):
-        dfCourse = self.para.dfCourse[['cod', 'nam', 'cat', 'tgt', 'eqp', 'lvl', 'len']]
-
         if cat:
-            dfCourse = dfCourse[dfCourse.iloc[:, 2].apply(lambda x: (any(i in x for i in cat)))]
+            dfCourse = self.dfCourse[self.dfCourse.iloc[:, 2].apply(lambda x: (any(i in x for i in cat)))]
 
         if tar:
-            dfCourse = dfCourse[dfCourse.iloc[:, 3].apply(lambda x: (any(i in x for i in tar)))]
+            dfCourse = self.dfCourse[self.dfCourse.iloc[:, 3].apply(lambda x: (any(i in x for i in tar)))]
 
         if eqp:
-            dfCourse = dfCourse[dfCourse.iloc[:, 4].apply(lambda x: (any(i in x for i in eqp)))]
+            dfCourse = self.dfCourse[self.dfCourse.iloc[:, 4].apply(lambda x: (any(i in x for i in eqp)))]
 
         return dfCourse
 
     def ShowCourse(self, dfCourse):
-        # todo: 启动时，自动显示所有课程
-        self.coursePool = StandardTreeview(master=self.frameShow)
-        button = StandardButton(self.frameShow, '确认', 1, 0)
-        button.bind('<ButtonRelease-1>', self.CourseSelected)
+        x = self.coursePool.get_children()
+        for item in x:
+            self.coursePool.delete(item)
 
         for i, row in dfCourse.iterrows():
             self.coursePool.insert('', 'end', values=list(row))
@@ -210,8 +213,8 @@ class SelCourse(object):
     def FilterSelected(self, event):
         cat, tar, eqp = self.FilterInput()
         dfCourse = self.FilterCourse(cat, tar, eqp)
-        if len(dfCourse.index):
-            self.ShowCourse(dfCourse)
+        #if len(dfCourse.index):
+        self.ShowCourse(dfCourse)
 
     def CourseSelected(self, event):
         course = self.coursePool.item(self.coursePool.focus())['values']
@@ -297,14 +300,14 @@ def _PlayCourse(engine, course: list, dfCourse: pd.DataFrame):
             listRecord[i - x - 1] = [st, row['code'], str(qnt).zfill(2), ed]
 
     nw = int(time.time() - bg)
-    textEnd = '恭喜你！完成{}！'.format(course[1])
+    textEnd = '恭喜您！已完成，{}！'.format(course[1])
     _text2Speech(engine, textEnd)
 
     dfRecord = pd.DataFrame(listRecord, columns=['bg', 'code', 'qnt', 'ed'])
     dfRecord.to_csv(Para().txtMotionHistory, mode='a', sep=' ', index=False, header=False)
 
     if abs(nw - sec) > 10:
-        notice = '注意！请更新档案！{}，耗时共计{}秒。'.format(course[0].split('-')[-1], nw)
+        notice = '注意！请更新档案！{}，耗时共计{}秒。'.format(course[1], nw)
         _text2Speech(engine, notice)
 
 
