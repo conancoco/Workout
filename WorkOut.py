@@ -297,7 +297,7 @@ def _PlayCourse(engine, course: list, dfCourse: pd.DataFrame):
             listRecord[i - x - 1] = [st, row['code'], str(qnt).zfill(2), ed]
 
     nw = int(time.time() - bg)
-    textEnd = '恭喜你！完成训练！'
+    textEnd = '恭喜你！完成{}！'.format(course[1])
     _text2Speech(engine, textEnd)
 
     dfRecord = pd.DataFrame(listRecord, columns=['bg', 'code', 'qnt', 'ed'])
